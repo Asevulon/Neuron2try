@@ -14,16 +14,15 @@ neuron::neuron(int size)
 	w = vector<double>(size, 0);
 	for (int i = 0; i < size; i++)
 	{
-		w[i] = rand(-0.1, 0.1);
+		w[i] = rand(-1, 1);
 	}
-	fi = rand(-0.1, 0.1);
+	fi = rand(-1, 1);
 }
 
 
 NW::NW()
 {
 	_betta = 0.1;
-	srand(time(NULL));
 	for (int i = 0; i < _size; i++)
 	{
 		first[i] = neuron(3);
@@ -38,8 +37,6 @@ void NW::CreateTests()
 	test = { {0,0,0}, {0,0,1}, {0,1,0}, {0,1,1},
 	{1,0,0}, {1,0,1}, {1,1,0}, {1,1,1} };
 	answers = { 0,1,1,0,1,0,0,1 };
-	/*test = { {0,0,1}, {0,1,0}, {1,0,0}, {1,1,1}, {0,0,1}, {0,1,0}, {1,0,0}, {1,1,1}};
-	answers = { 1,1,1,1,1,1,1,1 };*/
 }
 
 
@@ -69,7 +66,7 @@ double NW::Calc(vector<double>& in)
 
 double NW::f(double x)
 {
-	return 1. / (1. + exp(x));
+	return 1. / (1. + exp(- 2 * x));
 }
 double NW::df(double x)
 {
@@ -90,7 +87,7 @@ int NW::Train()
 			double res = Calc(test[i]);
 			res -= answers[i];
 			res *= res;
-			if (res < 1e-2)
+			if (res < 1e-4)
 			{
 				TestRes[i] = true;
 				continue;
@@ -98,17 +95,17 @@ int NW::Train()
 			else TestRes[i] = false;
 
 
-			double tDelta = (answers[i] - second.out) * df(second.out);
+			double tDelta = -2 * second.out * (1 - second.out) * (answers[i] - second.out);
 			double fDelta[_size];
 			for (int j = 0; j < _size; j++)
 			{
-				fDelta[j] = tDelta * second.w[j] * df(first[j].out);
+				fDelta[j] = 2 * first[j].out * (1 - first[j].out) * tDelta * second.w[j];
 			}
 
 
 			for (int j = 0; j < _size; j++)
 			{
-				second.w[j] += 0.1 * tDelta * second.in[j];
+				second.w[j] -= 0.1 * tDelta * second.in[j];
 			}
 			second.fi += 0.1 * tDelta;
 
@@ -117,15 +114,16 @@ int NW::Train()
 			{
 				for (int k = 0; k < 3; k++)
 				{
-					first[j].w[k] += 0.1 * fDelta[j] * first[j].in[k];
+					first[j].w[k] -= 0.1 * fDelta[j] * first[j].in[k];
 				}
 				first[j].fi += 0.1 * fDelta[j];
 			}
 		}
 
 		ctr++;
-		
-		if (ctr > 1e6)break;
+
+
+		if (ctr > 100000)break;
 	} while (isTestsUnsucceed(TestRes));
 	return ctr;
 }
