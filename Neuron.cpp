@@ -87,7 +87,7 @@ int NW::Train()
 			double res = Calc(test[i]);
 			res -= answers[i];
 			res *= res;
-			if (res < 1e-4)
+			if (res < 1e-6)
 			{
 				TestRes[i] = true;
 				continue;
@@ -123,7 +123,7 @@ int NW::Train()
 		ctr++;
 
 
-		if (ctr > 100000)break;
+		if (ctr > 10000000)break;
 	} while (isTestsUnsucceed(TestRes));
 	return ctr;
 }
@@ -148,7 +148,7 @@ void NW::ShowTests()
 		mist *= mist;
 		string str = "ok";
 		if (mist > 1e-2) str = "WA";
-		printf("{ %d, %d, %d }\t%.2f\tans: %d\t%s\n", (int)test[i][0], (int)test[i][1], (int)test[i][2], calc, (int)answers[i], str.c_str());
+		printf("{ %d, %d, %d }\t%.3f\tans: %d\t%s\n", (int)test[i][0], (int)test[i][1], (int)test[i][2], calc, (int)answers[i], str.c_str());
 
 	}
 	cout << "\n\n";
